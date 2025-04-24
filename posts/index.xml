@@ -1,0 +1,188 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Riu Rodríguez Sakamoto</title><link>https://riurodsak.github.io/posts/</link><description>Recent content in Posts on Riu Rodríguez Sakamoto</description><generator>Hugo -- gohugo.io</generator><language>en-gb</language><lastBuildDate>Wed, 23 Oct 2024 16:14:33 +0100</lastBuildDate><atom:link href="https://riurodsak.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Concept selection in systems engineering as lenses in Poly</title><link>https://riurodsak.github.io/posts/2024/10/concept-selection-in-systems-engineering-as-lenses-in-poly/</link><pubDate>Wed, 23 Oct 2024 16:14:33 +0100</pubDate><guid>https://riurodsak.github.io/posts/2024/10/concept-selection-in-systems-engineering-as-lenses-in-poly/</guid><description>&lt;p>A couple of weeks ago I had the chance to attend the &lt;a href="https://www.icms.org.uk/GovernanceDesign">Mathematics for Governance Design&lt;/a> Workshop, where we explored avenues of collaboration between social scientists and category theorists in the task of modelling social dynamics and design of governance structures.
+Others are writing about the open games engine, but I wanted to focus on an idea that I discussed with &lt;a href="https://www.block.science/">Michael &amp;ldquo;Z&amp;rdquo; Zargham&lt;/a> and &lt;a href="http://www.dspivak.net/">David Spivak&lt;/a> about systems engineering design and lenses.&lt;/p></description><content type="html"><![CDATA[<p>A couple of weeks ago I had the chance to attend the <a href="https://www.icms.org.uk/GovernanceDesign">Mathematics for Governance Design</a> Workshop, where we explored avenues of collaboration between social scientists and category theorists in the task of modelling social dynamics and design of governance structures.
+Others are writing about the open games engine, but I wanted to focus on an idea that I discussed with <a href="https://www.block.science/">Michael &ldquo;Z&rdquo; Zargham</a> and <a href="http://www.dspivak.net/">David Spivak</a> about systems engineering design and lenses.</p>
+<h1 id="systems-engineering">Systems engineering</h1>
+<p>In traditional systems engineering, the system requirements, design and implementation details were captured in textual documents.
+This often led to inconsistency and redundancy in some large projects.</p>
+<p>The modernization to the current model-based approach was made possible among other factors by system modeling languages, such as SysML, an extension of software&rsquo;s UML that allows structured, visual representation of behaviour, architecture and requirements.</p>
+<p>In addition to traditional (by which I mean Java-centric) general system modeling languages such as <a href="https://docs.nomagic.com/display/CSM2024xR1">Cameo Systems Modeler</a> or <a href="https://www.modelio.org/index.htm">ModelIO</a>, there are many new system modeling languages emerging that serve both as a visualization tool and also leverage the foundations of systems theory (<a href="https://topos.site/blog/2024-10-02-introducing-catcolab/">one</a> just this month!).
+My aim here is to prototype a modeling language that</p>
+<ul>
+<li>has both a visual representation via string diagrams and static analysis via basic types or attributes</li>
+<li>aids in the concept design and concept selection steps of the project&rsquo;s lifecycle.</li>
+</ul>
+<h1 id="system-processes-as-lenses">System processes as lenses</h1>
+<p>Design interfaces seem to always be bidirectional: there are some requirements as inputs, and value/products as outputs. The sketch that &ldquo;Z&rdquo; showed me was something like the following:</p>
+<p><img src="system_architecture_lens.svg#svgstyle" alt="System architecture lens"></p>
+<p>where the high level interface on the left gets translated to a low level interface on the right.
+An example is NASA&rsquo;s <a href="https://nodis3.gsfc.nasa.gov/npg_img/N_PR_7123_001B_/NPR7123.1BC3G1.png">&ldquo;Systems Engineering Engine&rdquo;</a>, which can be depicted in some greater detail as:</p>
+<p><img src="NASA_engine_lens.svg#svgstyle" alt="NASA SE Engine lens"></p>
+<p>where the two maps refer to processes related to &ldquo;system design&rdquo;, and &ldquo;product realization &amp; technical management&rdquo;.
+One structure originating in functional programming with this interface is a lens.
+A lens from an interface ${A\choose B}$ to another ${C\choose D}$, written $\lambda\in\mathrm{Lens}({A\choose B},{C\choose D})$, is a bidirectional map characterized by a forward map $v:A\to C$ and a backward map $u:A\times D\to B$.
+They form a monoidal category, and have a formal graphical syntax similar to the one shown above. Their parallel (monoidal) composition serves as juxtaposition of independent subprocesses, and sequential composition acts as a &ldquo;wrapper interface&rdquo;.</p>
+<p>Consider a set of requirements $R$ for an expected product $P$.
+One may know that $R$ can be decomposed into two independent sets of requirements $S_1,S_2$, for subproducts $Q_1,Q_2$ respectively.
+Suppose these two processes of creating the subproducts $Q_1,Q_2$ out of $S_1,S_2$ cannot be decomposed further, and we know how to create them (e.g. the definition of functions $u_i:S_i\to Q_i$ is known).
+These can be encoded as $\mathrm{Lens}({R\choose P},{S_1\times S_2\choose Q_1\times Q_2})$ composed with $\mathrm{Lens}({S_i\choose Q_i},{1\choose 1})$, depicted in the following diagram:</p>
+<p><img src="product_example.svg#svgstyle" alt="Product decomposition example"></p>
+<p>This coupling the feedback of execution to the process itself has two effects:</p>
+<ul>
+<li>an overhead to the process design. Every process that transforms a product&rsquo;s requirement into smaller pieces has to describe how the subproducts realization satisfy the initial requirement.</li>
+<li>a simplification of <em>some</em> requirement verifications by composition of compatible interfaces. It modularizes the question &ldquo;Does this system satisfy the stakeholder&rsquo;s requirements?&rdquo; into subproblems of checking whether the definition of the functions $u_i$ satisfy their declared type $S_i\to Q_i$.</li>
+</ul>
+<p>My conjecture is that the improvements coming from the second point overcome the overhead of the first in concept design. Specialization from function to form.
+As with every framework, its misuse or application outside its intended scope might lead to redundant or unnatural boilerplate, but it forces at least to think about every components intended purpose and contribution to the overall goal.</p>
+<h1 id="lenses-in-poly-and-dynamic-wiring-diagrams">Lenses in Poly and dynamic wiring diagrams</h1>
+<p>The second point to address is the aid in concept design and selection.
+Once a system model is defined, the verification process is straight forward, but how do we come up with the model itself?
+One possibility is to define an initial guess of a wiring diagram like the one above and define rewiring operations (e.g. to optimize some metric).
+In the framework of $\mathrm{Poly}$, this corresponds to the horizontal morphisms of $\mathbb{O}\mathrm{rg}$, i.e. $[p,q]$-coalgebras, which were introduced to model &ldquo;dynamic wiring diagrams&rdquo; by Shapiro and Spivak [<a href="https://arxiv.org/abs/2205.03906">1</a>].</p>
+<p>The usual way of understanding the relation between $\mathrm{Lens}$ and $\mathrm{Poly}$ is by the traditional &ldquo;data-accessor&rdquo; interpretation of lenses, which correspond to wiring diagrams: for a lens $\lambda:{A\choose B}\rightleftarrows{C\choose D}$, it&rsquo;s forward map $v$ <em>views</em> part $B$ of a data structure $A$, and it&rsquo;s backward map $u$ <em>updates</em> the datastructure $A$ with a new part $D$. This is exactly a morphism $Ay^B\to Cy^D$ in $\mathrm{Poly}$.
+The last string diagram above might be written as the composition of $\mathrm{Poly}(Ry^P,S_1y^{Q_1}\otimes S_2y^{Q_2})$ with $\mathrm{Poly}(S_iy^{Q_i},y)$.</p>
+<p>However, I want to make explicit the constructor of lenses internally to $\mathrm{Poly}$, by considering the morphism
+$$ \mathrm{mkLens}:\mathrm{Poly}(Cy^A\otimes By^{AD}, CBy^{AD}) $$
+$\mathrm{mkLens}(v,u)$ is a monomial with inputs (positions) $C\times B$ and outputs (directions) $A\times D$ arising from the composition of a view map $v\in Cy^A$ and an update map $u\in By^{AD}$, i.e. as the image of a particular wiring diagram  that sends $(v,u)\mapsto A^2y^A\triangleleft (v\otimes u)$.</p>
+<p>The reason for this embedding of lenses is to make a distinction between morphisms in $\mathrm{Poly}$ that are structural, and others that are computational.
+Given a set of $I$ different subprocesses/legacy products/COTS components (one might call it a &ldquo;knowledge base&rdquo;), a dynamical system that enables <strong>concept selection</strong> would be the morphism:</p>
+<p>$$ Sy^S \to [\bigotimes_{i\in I}\mathrm{mkLens}(v_i,u_i), Ry^P] $$</p>
+<p>This is an example of a $[p,q]$-coalgebra.</p>
+<h1 id="api-and-search-heuristics">API and search heuristics</h1>
+<p>This sketches an idealized tool where the user provides pairs of (process, feedback) that get converted to a lens wiring diagram.
+The proposed composition of them would be the initial state of the $[p,q]$-coalgebra.
+The tool then checks the type compatibility between them, and suggests alternative wirings via the coalgebra evolution.</p>
+<p>The difficulties from both the practice and theory sides are aligned:</p>
+<ul>
+<li>Composition of system processes is &ldquo;easy&rdquo;: verifying that certain processes achieve an overall requirements specification is modularized, and is realized by construction if formalized via a rich enough type system.</li>
+<li>Decomposition of system processes is hard: coming up with a suitable set of processes that accomplish an initial task is performed by heuristics from an experienced systems engineer, and in theory it is a search problem as hard as the word problem.</li>
+</ul>
+<p>However, this last point might in practice not be as hard as it sounds; while for randomly generated system processes it might be hard, the system processes designed by engineers are hardly random.
+Incorporating search heuristics from experts also has a compounding benefit over development of similar products.
+Reducing the search space and approximating solutions via search heuristics from experts and Deep Learning methods are also strategies employed in many other fields that can be applicable here too.</p>
+<p>Just the type compatibility would be a modernization of current system modeling tools.
+But building new tools is not always the most important part; one creates an ecosystem which might be efficient internally, but what use does it have to outsiders?
+This was one of the motivations that got me into category theory in the first place.
+While in some fields this can only be done by being efficient communicators, applied category theory has some tools to tackle this problem in a slightly more systematic way, and it is something that I find beautiful about parsers, compilers, and learning other human languages.</p>
+]]></content></item><item><title>Reinforcement Learning through the lens of Categorical Cybernetics</title><link>https://riurodsak.github.io/posts/2024/05/rl_cat_cyb/</link><pubDate>Tue, 28 May 2024 10:56:57 +0100</pubDate><guid>https://riurodsak.github.io/posts/2024/05/rl_cat_cyb/</guid><description>&lt;p>Cross-posted from &lt;a href="https://cybercat.institute/2024/05/29/reinforcement-learning-in-cat-cyb/">Cybercat Institute&lt;/a>.&lt;/p>
+&lt;p>I&amp;rsquo;ve recently written together with &lt;a href="https://julesh.com/">Jules Hedges&lt;/a> about Reinforcement Learning using the Categorical Cybernetics framework (you can find the ACT2024 paper &lt;a href="https://arxiv.org/abs/2404.02688">here&lt;/a>).
+Here I would like to talk about the main construction, which I like to refer to as the &amp;ldquo;RL lens&amp;rdquo;.&lt;/p>
+&lt;h1 id="selected-aspects-of-rl">Selected aspects of RL&lt;/h1>
+&lt;p>In modelling disciplines, one often faces the challenge of balancing three often conflicting aspects: representational elegance, the breadth of examples to capture, and the depth or specificity in capturing those examples of interest.
+In the context of reinforcement learning theory, this raises the question: what is an adequate ontology for the techniques involved in agents learning from interaction with an environment?&lt;/p></description><content type="html"><![CDATA[<p>Cross-posted from <a href="https://cybercat.institute/2024/05/29/reinforcement-learning-in-cat-cyb/">Cybercat Institute</a>.</p>
+<p>I&rsquo;ve recently written together with <a href="https://julesh.com/">Jules Hedges</a> about Reinforcement Learning using the Categorical Cybernetics framework (you can find the ACT2024 paper <a href="https://arxiv.org/abs/2404.02688">here</a>).
+Here I would like to talk about the main construction, which I like to refer to as the &ldquo;RL lens&rdquo;.</p>
+<h1 id="selected-aspects-of-rl">Selected aspects of RL</h1>
+<p>In modelling disciplines, one often faces the challenge of balancing three often conflicting aspects: representational elegance, the breadth of examples to capture, and the depth or specificity in capturing those examples of interest.
+In the context of reinforcement learning theory, this raises the question: what is an adequate ontology for the techniques involved in agents learning from interaction with an environment?</p>
+<p>Here we make a structural approach to the above dilemma, both in the sense of structural realism and <a href="https://ncatlab.org/nlab/show/stuff%2C+structure%2C+property">stuff, structure, property</a>.
+The characteristics of RL algorithms that we capture are their modularity and specification via typed interfaces.</p>
+<p>To keep this exposition grounded in something practical, we will follow an example, <a href="https://en.wikipedia.org/wiki/Q-learning">Q-learning</a>, which from this point of view captures the essence of reinforcement learning.
+It is an algorithm that finds an optimal policy in a MDP by keeping an estimate of value of taking a certain action in a certain state, encoded as a table $Q:A\times S\to R$, and updating it from previous estimates (<em>bootstrapping</em>) and from samples obtained by interacting with an environment.
+This is the content of the following equation (we&rsquo;ll give the precise type for it later):</p>
+<p>$$ \begin{equation}
+Q(s,a) \gets (1-\alpha) Q(s,a) + \alpha [r + \max_{a&rsquo;:A}Q(s&rsquo;,a&rsquo;) ]
+\end{equation} $$</p>
+<p>One does also have a policy that is derived from the $Q$ table, usually an $\varepsilon$-greedy policy that selects with probability $1-\varepsilon$ for a state $s$ the action that maximizes the estimated value, $\max_{a:A}Q(s,a)$, and a uniformly sampled action with probability $\varepsilon$.
+This choice helps to overcome the exploration-exploitation balance.</p>
+<p>Ablating either component produces other existing algorithms, which is reassuring:</p>
+<ul>
+<li>If we remove the bootstrapping component, one recovers a (model-free) one-step Monte Carlo algorithm.</li>
+<li>If we remove the samples, one recovers classical Dynamic Programming methods<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup> such as Value Iteration. We&rsquo;ll come back to these sample-free algorithms <a href="#continuations-function-spaces-and-lenses-in-lenses">later</a>.</li>
+</ul>
+<h1 id="the-rl-lens">The RL lens</h1>
+<p>Q-learning as we&rsquo;ve just described, and other major RL algorithms, can be captured as lenses; the forward map is the policy deployment from the models parameters, and the backward map is the update function.</p>
+<p><img src="generic_model.svg#svgstyle" alt="Generic model lens"></p>
+<p>The interface types vary from algorithm to algorithm.
+In the case of Q-learning, the forward map $P$ is of type $R^{S\times A}\to (DA)^S$. It takes the current $Q$-table $Q:S\times A\to R$ and outputs a policy $S\to DA$. This is our $\varepsilon$-greedy policy defined earlier.
+The backward map $G$ has the following type (we define $\tilde{Q}$ in (2)):
+$$ \begin{align*}
+R^{S\times A}\times (S\times A\times R\times S) &amp;\to T_{(s,a)}^{*}(S\times A) \newline
+Q, (s,a,r,s) &amp;\mapsto \tilde{Q}
+\end{align*} $$</p>
+<p><img src="Q_learning_model.svg#svgstyle" alt="Q-learning model lens"></p>
+<p>The type of model parameter change $\Delta(R^{S\times A})=T_{(s,a)}^{*}(S\times A)$ has as elements cotangent vectors to the base space $S\times A$ (not to $R^{S\times A}$).
+This technicality allows us to define the pointwise update of equation (1) as $((s,a),g)$, where $g=(r + \gamma\max_{a&rsquo;:A}Q(s&rsquo;,a&rsquo;))\in R$ is the <em>update target</em> of our model.
+The new $Q$ function then is defined as:</p>
+<p>$$ \begin{equation}
+\tilde{Q}(\tilde{s},\tilde{a}) = \begin{cases}
+(1-\alpha)Q(s,a) + \alpha [r + \gamma \max_{a&rsquo;} Q(s&rsquo;,a&rsquo;)] &amp; (\tilde{s},\tilde{a})=(s,a) \newline
+Q(s,a) &amp; o/w
+\end{cases} \end{equation} $$</p>
+<p>The quotes in the diagram above reflects that showing explicitly the $S$ and $A$ wires below loses the dependency of the type $R^{S\times A}$ over them.
+This is why in the paper we prefer to write the backward map as a single box $G$ with inputs $R^{S\times A}\times (S\times A\times R)$ and output $T_{(s,a)}^{*}(S\times A)$.</p>
+<h1 id="from-q-learning-to-deep-q-networks">From Q-learning to Deep Q-networks</h1>
+<p>Writing the change type as a cotangent space allows us to bridge the gap to Deep Learning methods.
+In our running example, we can do the standard transformation of the Bellman update to a Bellman error to decompose $G$ into two consecutive steps:</p>
+<ul>
+<li>
+<p>Backward map:</p>
+<p>$$ \begin{align*}
+G:R^{S\times A} \times (S\times A\times R\times S&rsquo;) &amp;\to S\times A\times R \newline
+Q, (s,a,r,s&rsquo;) &amp;\mapsto (s,a,\mathcal{L})
+\end{align*} $$</p>
+<p>The loss $\mathcal{L}$ is defined as the MSE between the current $Q$-value and the update target $g$:
+$$ \mathcal{L} = \left(Q(s,a) - g\right)^2 = \left(Q(s,a) - (r + \gamma \max_{a&rsquo;} \bar{Q}(s&rsquo;,a&rsquo;)) \right)^2 $$
+We treat $\bar{Q}(s&rsquo;,a&rsquo;)$ ($Q$ bar) as a constant value, so that the (semi-)gradient of $\mathcal{L}$ wrt. the $Q$-matrix <em>is</em> the Bellman Q-update, as we show next.</p>
+</li>
+<li>
+<p>Feedback unit (Bellman update):</p>
+<p>$$ \begin{align*}
+(1+S\times A\times R)\times R^{S\times A} \to&amp; R^{S\times A} \newline
+*, Q \mapsto&amp; Q \newline
+(s,a,\mathcal{L}), Q \mapsto&amp; \tilde{Q} \newline
+=&amp; Q - {\alpha\over 2}{\partial\mathcal{L}\over\partial Q} \newline
+=&amp; \forall (\tilde{s},\tilde{a}). \begin{cases}
+Q(s,a) - \alpha(Q(s,a) - g) &amp; (\tilde{s},\tilde{a}) = (s,a) \newline
+Q(s,a) &amp; o/w
+\end{cases} \newline
+&amp;  \forall (\tilde{s},\tilde{a}).\begin{cases}
+(1-\alpha) Q(s,a) + \alpha g &amp; (\tilde{s},\tilde{a}) = (s,a) \newline
+Q(s,a) &amp; o/w
+\end{cases}
+\end{align*} $$</p>
+<p>This recovers (2), so we can say that the backwards map is doing <em>pointwise</em> gradient descent, by only updating the $(s,a)$ indexed $Q$-value.</p>
+</li>
+</ul>
+<h1 id="continuations-function-spaces-and-lenses-in-lenses">Continuations, function spaces, and lenses in lenses</h1>
+<p>Focusing now on sample-free algorithms, the model&rsquo;s parameter update is an operator $(X\to R)\to (X\to R)$ between function spaces.
+State value methods for example update value functions $S\to R$, whereas state-action value methods update functions $S\times A\to R$ (the $Q$-functions).
+More concretely, the updates of function spaces that appear in RL are known as Bellman operators.
+It turns out that a certain subclass which we call <em>linear Bellman operators</em> can be obtained functorially from lenses as well!</p>
+<p>The idea is to employ the continuation functor<sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup> which is the following representable functor:</p>
+<p>$$ \begin{align*}
+\mathbb{K} =\mathbf{Lens}(-,1) : \mathbf{Lens}^\mathrm{op} &amp;\to \mathbf{Set} \newline
+{X\choose R} &amp;\mapsto R^X \newline
+{X\choose R}\rightleftarrows {X&rsquo;\choose R&rsquo;} &amp;\mapsto R&rsquo;^{X&rsquo;} \to R^X
+\end{align*} $$</p>
+<p>The contravariance hints already at the corecursive nature of these operators:
+They take as input a value function of states <em>in the future</em>, and return a value function of states <em>in the present</em>.
+The subclass of Bellman operators that we obtain this way is linear in the sense that it uses the domain function in $R&rsquo;^{X&rsquo;}$ only once.</p>
+<p>An example of this is the value improvement operator from dynamic programming.
+This operator improves the value function $V:S\to R$ to give a better approximation of the long-term value of a policy $\pi:S\to A$, and is given by</p>
+<p>$$ V(s) \gets \mathbb{E}_{\mkern-14mu\substack{a\sim \pi(s)\newline (s&rsquo;,r)\sim t(s,a)}}[r+\gamma V(s&rsquo;)] = \sum _{a\in A}\pi(a\mid s) \sum _{\substack{s&rsquo;\in S\newline r\in R}}t(s&rsquo;,r\mid s, a) (r + \gamma V(s&rsquo;)) $$</p>
+<p>This is the image under $\mathbb{K}$ of a lens <sup id="fnref:3"><a href="#fn:3" class="footnote-ref" role="doc-noteref">3</a></sup> whose forward and backward maps are the transition function $\mathrm{pr}_1(t(-,\pi(-))):S \to S$ under a fixed policy $\pi:S\to A$, and the update target computation $(-)+\gamma\cdot(=):\R\times \R\to \R$ respectively, as shown below.</p>
+<p><img src="VI_lens_to_set.svg#svgstyle" alt="Value Improvement lens to function"></p>
+<p>If you want to read more about this &ldquo;optics perspective&rdquo; on Value Iteration and its relation with problems like the control of an inverted pendulum, the savings problem in economics and more, check out our previous <a href="https://arxiv.org/abs/2206.04547">ACT2022 paper</a>.</p>
+<p>Once we have transformed the Bellman operator into a function using $\mathbb{K}$, this embeds into the backward map of the RL lens.</p>
+<p><img src="Bellman_embedding_into_lens.svg#svgstyle" alt="Embedding of the Bellman operator into the backward pass of the RL lens"></p>
+<p>It is then natural to ask what a backward map that does not ignore the sample input might look like, and these are what we call <em>parametrised</em> Bellman operators.
+These are obtained by the lifting of $\mathbb{K}$ to the (externally parametrised) functor $\mathrm{Para}(\mathbb{K}):\mathrm{Para}(\mathrm{Lens}^\mathrm{op})\to\mathrm{Set}$, and captures exactly what algorithms like <a href="https://en.wikipedia.org/wiki/State%E2%80%93action%E2%80%93reward%E2%80%93state%E2%80%93action">SARSA</a> are doing in terms of usage of both bootstrapping and sampling.</p>
+<h1 id="outlook">Outlook</h1>
+<p>We talked about learning from bootstrapping and from sampling as two distinct processes that fit into the lens structure. While the difference between these two is usually not emphasized enough, we believe that it is useful for understanding the structure of novel algorithms by making the information flow explicit.
+You can find more details, along with a discussion on Bellman operators, the <a href="https://cybercat.institute/2024/02/22/iteration-optics/">iteration functor</a> used to model stateful environments, prediction and bandit problems as nice corner cases of our framework, and more on our recent <a href="https://arxiv.org/abs/2404.02688">submission</a> to ACT2024.</p>
+<p>Moreover, this opens up the study of stateful models: multi-step methods like $n$-temporal difference or Monte Carlo Tree Search (used e.g. in AlphaZero), which we will leave for a future post, so stay tuned!</p>
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p>This is sometimes denoted &ldquo;offline&rdquo; RL, but one should note that offline methods include learning from a constant dataset and learning by updating one&rsquo;s estimates only at the end of episodes too.&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:2">
+<p>In general, the continuation functor is defined for any optic as $\mathbb{K}=\mathbf{Optic}(\mathcal{C})(-,I):\mathbf{Optic}(\mathcal{C})^\mathrm{op}\to\mathbf{Set}$, represented by the monoidal unit $I$.&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:3">
+<p>Ok I lied here a little: To be precise, the equation shown arises as the continuation of a <em>mixed</em> optic, where the forwards category is $\mathrm{Kl}(D)$ for a probability monad $D$, and the backwards category is $\mathrm{EM}(D)$. The value improvement operator that arises from the continuation of a lens is a deterministic version of this, where there&rsquo;s no expectation taken in the backwards pass because we fix the policy and the transition functions to be deterministic.&#160;<a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div>
+]]></content></item></channel></rss>
